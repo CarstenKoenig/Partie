@@ -15,12 +15,17 @@ clean:
 	rm -rf ./client/.pulp-cache
 	rm -rf ./client/bower_components
 	rm -rf ./client/output
+	rm ./client/src/Test.purs
 
 
-bundle.js:
+bundle.js: test.purs
 	cd ./client && \
-  bower install && \
+	bower install && \
 	pulp build --optimise --to ../static/bundle.js
+
+
+test.purs: Partie-exe
+	stack exec PS-bridge
 
 
 Partie-exe: setup

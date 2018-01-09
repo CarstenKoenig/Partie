@@ -8,10 +8,14 @@ import Pux.DOM.HTML (HTML)
 import Pux.Renderer.React (renderToDOM)
 import Text.Smolder.HTML (button, div, span)
 import Text.Smolder.Markup (text, (#!))
+import Test (Person(..))
 
 data Event = Increment | Decrement
 
 type State = Int
+
+carsten :: Person
+carsten = Person { name: "Carsten", age: 38 }
 
 -- | Return a new state (and effects) from each event
 foldp :: ∀ fx. Event -> State -> EffModel State Event fx

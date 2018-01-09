@@ -15,6 +15,7 @@ dependencies:
   - text
   - mtl
   - containers
+  - aeson
 
 library:
   source-dirs:        src/lib
@@ -28,4 +29,10 @@ executables:
       - Partie
       - scotty
       - wai-middleware-static
+  PS-bridge:
+    source-dirs:      src/bridge
+    main:             Main.hs
+    dependencies:
+      - Partie
+      - purescript-bridge
     
