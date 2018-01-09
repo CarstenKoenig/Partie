@@ -13,13 +13,18 @@ extra-source-files:
 dependencies:
   - base >= 4.7 && < 5
   - text
+  - bytestring
   - mtl
   - containers
   - aeson
 
 library:
   source-dirs:        src/lib
-  exposed-modules:    Test
+  exposed-modules:
+    - Test
+    - Games
+  dependencies:
+    - scotty
 
 executables:
   Partie:
