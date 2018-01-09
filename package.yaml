@@ -27,4 +27,5 @@ executables:
     dependencies:
       - Partie
       - scotty
+      - wai-middleware-static
     
