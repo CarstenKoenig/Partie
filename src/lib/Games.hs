@@ -33,7 +33,8 @@ instance FromJSON Progress
 
 data GenericGame =
   forall state move . (FromJSON state, ToJSON state, FromJSON move) =>
-  GenericGame { getGameState :: state -> GameState
+  GenericGame { currentState :: state
+              , getGameState :: state -> GameState
               , applyMove    :: move -> state -> state
               }
 
@@ -52,17 +53,17 @@ instance FromJSON GameState
 
 
 
-getState :: (ScottyError e, MonadIO m) => GenericGame -> ByteString -> ActionT e m GameState
-getState (GenericGame getS _) st =
-  maybe invalidGameState (return . getS) $ decode st
+getState :: GenericGame -> GameState
+getState (GenericGame st getS _) = getS st
 
 
-move :: (ScottyError e, MonadIO m) => GenericGame -> ByteString -> ActionT e m ()
-move (GenericGame _ apply) st = do
+-- | updates the game and returns the game as JSON
+move :: (ScottyError e, MonadIO m) => GenericGame -> ActionT e m GenericGame
+move g@(GenericGame st get apply) = do
   move' <- jsonData
-  maybe invalidGameState json $ do
-    state' <- decode st
-    pure $ apply move' state'
+  let st' = apply move' st
+  json st'
+  return $ GenericGame st' get apply
 
 
 invalidGameState :: (Monad m, ScottyError e) => ActionT e m a
