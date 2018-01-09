@@ -15,6 +15,7 @@ main =
     middleware $ staticPolicy (noDots >-> addBase "static")
 
     get "/" $ file "./html/index.html"
+    get "/person" $ json (Person "Carsten" 38)
 
     get "/:word" $ do
       beam <- param "word"
