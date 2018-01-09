@@ -1,0 +1,30 @@
+name:                Partie
+version:             0.1.0.0
+synopsis:            demonstrating playing simple games using FP
+homepage:            https://github.com/CarstenKoenig/Partie#readme
+license:             BSD3
+author:              Carsten König
+maintainer:          Carsten.Koenig@hotmail.de
+copyright:           2018 Carsten König
+category:            Web, Game
+extra-source-files:
+- README.md
+
+dependencies:
+  - base >= 4.7 && < 5
+  - text
+  - mtl
+  - containers
+
+library:
+  source-dirs:        src/lib
+  exposed-modules:    Test
+
+executables:
+  Partie:
+    source-dirs:      src/app
+    main:             Main.hs
+    dependencies:
+      - Partie
+      - scotty
+    
