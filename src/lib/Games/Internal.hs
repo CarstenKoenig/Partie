@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DeriveGeneric, DeriveFunctor #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Games.Internal
   ( Game (..)
@@ -15,17 +15,17 @@ data Game st mv pl =
   Game
   { gamePlayers  :: [pl]
   , gameTurn     :: st -> Maybe pl
-  , gameProgress :: st -> Progress pl
+  , gameProgress :: st -> Progress
   , gameMakeMove :: mv -> st -> Maybe st
   }
 
 
-data Progress pl
-  = Running | Draw | Won [pl] | Lost [pl]
-  deriving (Generic, Show, Functor)
+data Progress
+  = Running | Draw | Won [Int] | Lost [Int]
+  deriving (Generic, Show)
 
 
-instance ToJSON pl => ToJSON (Progress pl) where
+instance ToJSON Progress where
   toEncoding = genericToEncoding defaultOptions
 
-instance FromJSON pl => FromJSON (Progress pl)
+instance FromJSON Progress

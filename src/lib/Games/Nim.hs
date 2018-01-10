@@ -29,11 +29,11 @@ initNim :: Int -> Nim
 initNim n = Nim Player1 [1..n]
 
 
-progressNim :: Nim -> Progress Player
+progressNim :: Nim -> Progress 
 progressNim nm =
   if any (> 0) (rows nm)
   then Running
-  else Won [ turn nm ]
+  else Won [ fromEnum $ turn nm ]
 
 
 move :: Move -> Nim -> Maybe Nim

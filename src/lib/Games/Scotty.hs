@@ -41,7 +41,7 @@ data GameInfo =
   GameInfo
   { nrPlayers  :: Player
   , playerTurn :: Maybe Player
-  , progress   :: Progress Player
+  , progress   :: Progress
   } deriving (Generic, Show)
 
 instance ToJSON GameInfo where
@@ -62,7 +62,7 @@ fromGame game curState =
     getGameState' st =
       let nr = length $ gamePlayers game
           pl = fromEnum <$> gameTurn game st
-          pr = fmap fromEnum $ gameProgress game st
+          pr = gameProgress game st
       in GameInfo nr pl pr
 
     applyMove' :: mv -> st -> Maybe st
