@@ -17,12 +17,14 @@ dependencies:
   - mtl
   - containers
   - aeson
+  - stm
+  - uuid
 
 library:
   source-dirs:        src/lib
   exposed-modules:
     - Test
-    - Games
+    - Games.Scotty
   dependencies:
     - scotty
 
