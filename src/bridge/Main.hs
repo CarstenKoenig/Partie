@@ -9,6 +9,6 @@ main :: IO ()
 main = do
   let myTypes = [ mkSumType (Proxy :: Proxy Person)
                 , mkSumType (Proxy :: Proxy GameInfo)
-                , mkSumType (Proxy :: Proxy Progress)
+                , mkSumType (Proxy :: Proxy (Progress Player))
                 ]
   writePSTypes "./client/src/" (buildBridge defaultBridge) myTypes

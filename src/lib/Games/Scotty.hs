@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Games.Scotty
   ( GenericGame
@@ -10,7 +11,7 @@ module Games.Scotty
   , GameInfo (nrPlayers, playerTurn, progress)
   , GameId
   , State
-  , getState
+  , getInfo
   , move
   ) where
 
@@ -25,40 +26,47 @@ import qualified Data.Map.Strict as Map
 import qualified Data.UUID as UUID
 import GHC.Generics
 import Web.Scotty.Trans
-
-
-type Player = Int
-
-data Progress
-  = Running | Draw | Won [Player] | Lost [Player]
-  deriving (Generic, Show)
-
-
-instance ToJSON Progress where
-  toEncoding = genericToEncoding defaultOptions
-
-instance FromJSON Progress
+import Games.Internal
 
 
 data GenericGame =
-  forall state move . (FromJSON state, ToJSON state, FromJSON move) =>
+  forall state move . (ToJSON state, FromJSON move) =>
   GenericGame { currentState :: state
               , getGameState :: state -> GameInfo
-              , applyMove    :: move -> state -> state
+              , applyMove    :: move -> state -> Maybe state
               }
+
 
 data GameInfo =
   GameInfo
-  { nrPlayers  :: Int
-  , playerTurn :: Int
-  , progress   :: Progress
+  { nrPlayers  :: Player
+  , playerTurn :: Maybe Player
+  , progress   :: Progress Player
   } deriving (Generic, Show)
-
 
 instance ToJSON GameInfo where
     toEncoding = genericToEncoding (defaultOptions { tagSingleConstructors = True })
 
 instance FromJSON GameInfo
+
+
+type Player = Int
+
+
+-- | translates the game template into a GenericGame that does not expose the games types
+fromGame :: forall st mv pl . (ToJSON st, FromJSON mv, Enum pl) => Game st mv pl -> st -> GenericGame
+fromGame game curState =
+  GenericGame curState getGameState' applyMove'
+  where
+    getGameState' :: st -> GameInfo
+    getGameState' st =
+      let nr = length $ gamePlayers game
+          pl = fromEnum <$> gameTurn game st
+          pr = fmap fromEnum $ gameProgress game st
+      in GameInfo nr pl pr
+
+    applyMove' :: mv -> st -> Maybe st
+    applyMove' = gameMakeMove game
 
 
 type GameId = UUID.UUID
@@ -68,8 +76,9 @@ data State =
         }
 
 
-getState :: (ScottyError e, MonadReader State m, MonadIO m) => GameId -> ActionT e m GameInfo
-getState gid =
+-- | gets the current game info
+getInfo :: (ScottyError e, MonadReader State m, MonadIO m) => GameId -> ActionT e m GameInfo
+getInfo gid =
   getState' <$> getGame gid
   where
     getState' (GenericGame st get _) = get st
@@ -80,10 +89,15 @@ move :: (ScottyError e, MonadIO m, MonadReader State m) => GameId -> ActionT e m
 move gid = do
   (GenericGame st get apply) <- getGame gid
   mv <- jsonData
-  let st' = apply mv st
-  setGame gid (GenericGame st' get apply)
-  json st'
+  case apply mv st of
+    Just st' -> do
+      setGame gid (GenericGame st' get apply)
+      json st'
+    Nothing -> raise $ stringError "invalid move"
 
+
+----------------------------------------------------------------------
+-- helpers
 
 getGame :: (ScottyError e, MonadReader State m, MonadIO m) => GameId -> ActionT e m GenericGame
 getGame gid = lift (asks runningGames) >>= game >>= maybe (gameNotFound gid) return
@@ -101,8 +115,3 @@ setGame gid gg = lift (asks runningGames) >>= setGame'
 
 gameNotFound :: (Monad m, ScottyError e) => GameId -> ActionT e m a
 gameNotFound gid = raise $ stringError $ "game " ++ UUID.toString gid ++ " not found"
-
-
-
-invalidGameState :: (Monad m, ScottyError e) => ActionT e m a
-invalidGameState = raise $ stringError "could not decode game state"
