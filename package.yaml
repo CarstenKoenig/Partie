@@ -25,6 +25,9 @@ library:
   exposed-modules:
     - Test
     - Games.Scotty
+    - Games.Nim
+  other-modules:
+    - Games.Internal
   dependencies:
     - scotty
 

@@ -20,13 +20,13 @@ import Control.Concurrent.STM.TVar
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Reader
 import Control.Monad.STM
-import Data.Aeson (FromJSON, ToJSON, decode, toEncoding, genericToEncoding, defaultOptions, tagSingleConstructors)
+import Data.Aeson (FromJSON, ToJSON, encode, decode, toEncoding, genericToEncoding, defaultOptions, tagSingleConstructors)
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.Map.Strict as Map
 import qualified Data.UUID as UUID
 import GHC.Generics
-import Web.Scotty.Trans
 import Games.Internal
+import Web.Scotty.Trans
 
 
 data GenericGame =
@@ -82,6 +82,16 @@ getInfo gid =
   getState' <$> getGame gid
   where
     getState' (GenericGame st get _) = get st
+
+
+jsonState :: GenericGame -> ByteString
+jsonState (GenericGame st _ _) = encode st
+
+
+jsonMove :: GenericGame -> ByteString -> Maybe ByteString
+jsonMove (GenericGame st _ apply) m = do
+  mv <- decode m
+  encode <$> apply mv st
 
 
 -- | updates the game and returns the game as JSON
