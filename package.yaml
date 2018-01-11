@@ -37,8 +37,16 @@ executables:
     main:             Main.hs
     dependencies:
       - Partie
-      - scotty
+      - aeson
+      - directory
+      - http-media
+      - lucid
+      - servant
+      - servant-server
+      - servant-lucid
+      - wai
       - wai-middleware-static
+      - warp
   PS-bridge:
     source-dirs:      src/bridge
     main:             Main.hs
