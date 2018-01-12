@@ -10,6 +10,7 @@ module Server (application, main) where
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
+import qualified Data.Text as T
 import Network.Wai (Application)
 import Network.Wai.Handler.Warp (run)
 import qualified Servant as S
@@ -29,7 +30,7 @@ application = S.serve (S.Proxy :: S.Proxy Api) server
 
 
 server :: S.Server Api
-server = handlePerson S.:<|> serveRoot S.:<|> serveStaticFiles
+server = handlePerson S.:<|> handleLogin  S.:<|> serveRoot S.:<|> serveStaticFiles
 
 
 serveStaticFiles = S.serveDirectoryWebApp "static"
@@ -37,6 +38,10 @@ serveStaticFiles = S.serveDirectoryWebApp "static"
 
 handlePerson :: S.Handler Person
 handlePerson = return $ Person "Carsten" 38
+
+
+handleLogin :: String -> S.Handler Person
+handleLogin name = return $ Person (T.pack name) 0
 
 
 serveRoot :: S.Handler (Html ())
